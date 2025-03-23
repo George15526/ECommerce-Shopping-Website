@@ -3,8 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/mysql/User');
 const { sendVerification } = require('../utils/email');
+const { JWT_SECRET } = require('../config/config');
+const { COOKIE_OPTIONS } = require('../config/config');
 
-const JWT_SECRET = 'JWT_SECRET';
 
 // 用戶註冊
 exports.register = async (req, res) => {
@@ -159,23 +160,39 @@ exports.verifyEmail = async (req, res) => {
 			},
 		);
 
+		console.log('Email verified successfully');
 		res.send('Email verified successfully');
 	} catch (error) {
+		console.log('Invalid or expired token');
 		res.status(400).send('Invalid or expired token');
 	}
 };
 
 // 用戶登入
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({where: { email: email }});
-    if (!user) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-    };
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-    };
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+	try {
+		const { email, password } = req.body;
+		const user = await User.findOne({ where: { email: email } });
+		if (!user) {
+			return res.status(400).json({ error: 'Invalid credentials' });
+		};
+		const isPasswordValid = await bcrypt.compare(password, user.password);
+		if (!isPasswordValid) {
+			return res.status(400).json({ error: 'Invalid credentials' });
+		};
+		const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+		console.log(token);
+		res.cookie('token', token, COOKIE_OPTIONS);
+		console.log(document.token)
+
+		return res.json({
+			status: 'success',
+			message: 'Login successfully',
+			data: user,
+		});
+	} catch (error) {
+		return res.status(500).json({
+			error: error.message,
+		});
+	}
 };

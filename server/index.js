@@ -1,19 +1,22 @@
 // server/index.js
-// require('dotenv').config(); // Load .env file
 
+require('dotenv').config();
 const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
 const app = express();
-const { sequelize } = require('./config/db')
 const authRoutes = require('./routes/authRoutes');
+const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
+const cors = require("cors");
+const { sequelize } = require('./config/db')
 const { swaggerUi, swaggerSpec } = require("./swagger");
-// const dotenv = require("dotenv")
 
-// dotenv.config();
 
-app.use(cors());
 app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+}));
 app.use('/api/v1', authRoutes);
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
