@@ -1,4 +1,4 @@
-# Hydrowater Shopping Website
+# ECommerce-Shopping-Website
 
 ### Project information
 
